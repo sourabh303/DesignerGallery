@@ -1,0 +1,65 @@
+/* Modern Card Component Styles */
+:root {
+  --primary-bg: #f8f9fa;
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --hover-shadow: rgba(0, 0, 0, 0.15);
+  --transition-speed: 0.25s;
+}
+
+body {
+  body {
+    background-color: #ffe4e1 !important;  /* light pink */
+  }
+    margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--card-shadow);
+  overflow: hidden;
+  transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 16px var(--hover-shadow);
+}
+
+/* Accessibility focus states */
+.card:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Responsive card sizing */
+@media (min-width: 768px) {
+  .card {
+    margin: 0.75rem;
+    flex: 1 1 calc(33.333% - 1.5rem);
+    min-width: 250px;
+  }
+}
+
+/* Smooth hover transition for touch devices */
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-6px);
+  }
+}
+
+/* Performance optimization */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+
+.design-preview img:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}

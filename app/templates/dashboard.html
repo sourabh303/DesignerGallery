@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    body {
+        font-family: 'Work Sans', sans-serif;
+        background: #f4f1ed;
+        margin: 0;
+        padding: 0;
+    }
+    .gallery-header {
+        text-align: center;
+        padding: 2rem 1rem 1rem;
+        font-size: 2.5rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #222;
+        border-bottom: 1px solid #ddd;
+    }
+    .designer-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+    }
+    .designer-card {
+        display: flex;
+        width: 90%;
+        max-width: 1000px;
+        background-color: #f8f8f8;
+        border: 1px solid #ddd;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    .designer-card:hover {
+        transform: scale(1.01);
+    }
+    .designer-left {
+        flex: 1;
+        background: url('/static/img/sample.jpg') center/cover no-repeat;
+        min-height: 250px;
+    }
+    .designer-right {
+        flex: 2;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .designer-title {
+        font-size: 1.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    .designer-description {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    .view-btn {
+        align-self: flex-start;
+        padding: 0.5rem 1.25rem;
+        background-color: #222;
+        color: #fff;
+        text-decoration: none;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+    .view-btn:hover {
+        background-color: #444;
+    }
+</style>
+
+<div class="gallery-header">Designer's Gallery</div>
+
+<div class="designer-container">
+    {% for designer in designers %}
+    <div class="designer-card">
+        <div class="designer-left"></div>
+        <div class="designer-right">
+            <div>
+                <div class="designer-title">{{ designer }}</div>
+                <div class="designer-description">
+                    Explore creative designs submitted by <strong>{{ designer }}</strong>.
+                </div>
+            </div>
+            <a class="view-btn" href="{{ url_for('views.designer_summary', designer_name=designer) }}">Open Gallery</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    table td, table th {
+        vertical-align: middle !important;
+    }
+    .design-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .design-preview img {
+        max-height: 280px;
+    }
+</style>
+
+<div class="d-flex justify-content-between mb-4">
+    <h3>{{ designer }} / {{ subfolder }} Designs</h3>
+    <a class="btn btn-secondary" href="{{ url_for('views.designer_summary', designer_name=designer) }}">← Back to Summary</a>
+</div>
+
+
+<!-- 🔍 Search + Filter Form -->
+<form method="get" class="mb-4 d-flex flex-wrap gap-2 align-items-center">
+    <input type="text" name="q" class="form-control me-2" placeholder="Search design..." value="{{ search_query }}">
+
+    <select name="suit_filter" class="form-select">
+        <option value="">All Suit Status</option>
+        {% for option in status_options %}
+            <option value="{{ option }}" {% if suit_filter == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="dupatta_filter" class="form-select">
+        <option value="">All Dupatta Status</option>
+        {% for option in status_options %}
+            <option value="{{ option }}" {% if dupatta_filter == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-dark">Apply Filters</button>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Select</th>
+                <th>Date</th>
+                <th>Design</th>
+                <th>Design Number</th>
+                <th>Suit Status</th>
+                <th>Dupatta Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for image in images %}
+            <tr>
+                <td><input type="checkbox" name="selected_images" value="{{ image.name }}"></td>
+                <td class="upload-date">{{ image.upload_date }}</td>
+                <td>
+                    <div class="design-preview">
+                        <a href="{{ url_for('views.image', designer=designer, filename=subfolder ~ '/' ~ image.name) }}" target="_blank">
+                            <img src="{{ url_for('views.image', designer=designer, filename=subfolder ~ '/' ~ image.name) }}" class="img-thumbnail">
+                        </a>
+                    </div>
+                </td>
+                <td><small class="d-block">{{ image.name.rsplit('.', 1)[0] }}</small></td>
+                <td>
+                    <form method="POST" action="{{ url_for('views.update_image_status', designer_name=designer, image_name=image.name) }}">
+                        <input type="hidden" name="design_number" value="{{ image.name }}">
+                        <input type="hidden" name="subfolder" value="{{ subfolder }}">
+                        <select name="suit_status" class="form-select mb-1">
+                            {% for option in status_options %}
+                                <option value="{{ option }}" {% if image.suit_status == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                </td>
+                <td>
+                        <select name="dupatta_status" class="form-select mb-1">
+                            {% for option in status_options %}
+                                <option value="{{ option }}" {% if image.dupatta_status == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                </td>
+                <td>
+                        <button type="submit" class="btn btn-success btn-sm">💾 Save</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Print Button -->
+<button type="button" class="btn btn-primary mt-3" onclick="printSelected()">🖨️ Print Selected</button>
+
+<!-- JS Print Function -->
+<script>
+function printSelected() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    if (checkboxes.length === 0) {
+        alert("No images selected.");
+        return;
+    }
+
+    const designer = "{{ designer }}";
+    const subfolder = "{{ subfolder }}";
+    const rows = [];
+
+    checkboxes.forEach(cb => {
+        const row = cb.closest("tr");
+        const imageName = cb.value;
+        const designNumber = imageName.split('.').slice(0, -1).join('.');
+        const suit = row.querySelector("select[name='suit_status']").value;
+        const dupatta = row.querySelector("select[name='dupatta_status']").value;
+        const imgUrl = `/images/${designer}/${subfolder}/${imageName}`;
+        const date = row.querySelector(".upload-date")?.textContent || '';
+
+        rows.push(`
+            <tr>
+                <td>${date}</td>
+                <td><img src="${imgUrl}" style="max-height: 200px; max-width: 200px;"></td>
+                <td>${designNumber}</td>
+                <td>${suit}</td>
+                <td>${dupatta}</td>
+            </tr>
+        `);
+    });
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print Designs</title>
+            <style>
+                body { font-family: sans-serif; padding: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+                img { max-height: 200px; max-width: 200px; }
+                h2 { margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <h2>Selected Designs - ${designer} / ${subfolder}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Image</th>
+                        <th>Design Number</th>
+                        <th>Suit Status</th>
+                        <th>Dupatta Status</th>
+                    </tr>
+                </thead>
+                <tbody>${rows.join('')}</tbody>
+            </table>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
+}
+</script>
+
+{% endblock %}

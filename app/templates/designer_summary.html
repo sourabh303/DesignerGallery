@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between mb-4">
+    <h3>{{ designer }} Summary</h3>
+    <a class="btn btn-secondary" href="{{ url_for('views.dashboard') }}">← Back to Dashboard</a>
+</div>
+
+<!-- KPIs -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ total }}</h2>
+                <p>Total Designs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ passed }}</h2>
+                <p>Designs Passed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ pending }}</h2>
+                <p>Designs Pending</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if filter %}
+<p class="text-muted">Showing data for: <strong>{{ filter.capitalize() }}</strong></p>
+{% endif %}
+
+<form method="get" class="mb-4 d-flex gap-2 align-items-center">
+    <label class="form-label mb-0">Filter by:</label>
+    <select name="filter" class="form-select w-auto" onchange="this.form.submit()">
+        <option value="">All Time</option>
+        <option value="monthly" {% if filter == 'monthly' %}selected{% endif %}>Monthly</option>
+        <option value="weekly" {% if filter == 'weekly' %}selected{% endif %}>Weekly</option>
+    </select>
+</form>
+
+
+<!-- Bar Chart -->
+<div class="mb-5">
+    <canvas id="barChart" height="80"></canvas>
+</div>
+
+
+<!-- Subfolder Grid -->
+<h5 class="mt-4 mb-3">Fabrics:</h5>
+<div class="row g-3">
+    {% for subfolder in subfolder_stats.keys() %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="{{ url_for('views.designer_gallery', designer_name=designer, subfolder='' if subfolder == 'Root' else subfolder) }}"
+           class="text-decoration-none text-dark">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-uppercase fw-bold">
+                        {{ 'Uncategorized' if subfolder == 'Root' else subfolder }}
+                    </h6>
+                    <p class="mb-0 text-muted small">
+                        {{ subfolder_stats[subfolder].total }} Designs
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+
+<!-- Inject chart data -->
+<script>
+
+    window.chartData = {
+        labels: {{ subfolder_stats.keys() | list | tojson | safe }},
+        passed: {{ subfolder_stats.values() | map(attribute='passed') | list | tojson | safe }},
+        pending: {{ subfolder_stats.values() | map(attribute='pending') | list | tojson | safe }}
+    };
+</script>
+
+</script>
+
+<!-- Load Chart.js and custom script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/summary_chart.js') }}"></script>
+
+
+{% endblock %}
